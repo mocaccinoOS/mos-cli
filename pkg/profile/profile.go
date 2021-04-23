@@ -70,6 +70,9 @@ func (ph ProfileHandler) Activate(p Profile) error {
 		return nil
 	}
 
+	if _, err := os.Stat(ph.ActiveDirectory); err != nil {
+		os.MkdirAll(ph.ActiveDirectory, 600)
+	}
 	return os.Symlink(filepath.Join(ph.ProfileDirectory, filepath.Base(p.Path)), filepath.Join(ph.ActiveDirectory, filepath.Base(p.Path)))
 }
 
