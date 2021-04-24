@@ -52,18 +52,17 @@ func evaluateDiff(f string, changeset config.ConfigChange, res config.Configs, i
 	}
 
 	if len(diffs) > 0 {
-
-		fmt.Print("\033[H\033[2J")
-		dmp := diffmatchpatch.New()
-		fmt.Printf("Diff for file: %s (changeset %s)\n", f, changeset.Path)
-
-		fmt.Println("-----------------------------------------------------")
-
-		fmt.Println(dmp.DiffPrettyText(diffs))
-
-		fmt.Println("-----------------------------------------------------")
-
 		if interactive {
+			fmt.Print("\033[H\033[2J")
+			dmp := diffmatchpatch.New()
+			fmt.Printf("Diff for file: %s (changeset %s)\n", f, changeset.Path)
+
+			fmt.Println("-----------------------------------------------------")
+
+			fmt.Println(dmp.DiffPrettyText(diffs))
+
+			fmt.Println("-----------------------------------------------------")
+
 			r := utils.Accept("Do you want to accept the following changes")
 			switch r {
 			case utils.AcceptQuestion:
@@ -73,6 +72,7 @@ func evaluateDiff(f string, changeset config.ConfigChange, res config.Configs, i
 				drop()
 			}
 		} else {
+			fmt.Printf("Merging configuration for file: %s (changeset %s)\n", f, changeset.Path)
 			accept()
 			drop()
 		}

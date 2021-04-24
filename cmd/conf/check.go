@@ -40,7 +40,7 @@ func NewCheckCommand() *cobra.Command {
 			fmt.Printf("Files with unmerged config files: %d\n", len(res.Files()))
 			for _, f := range res.Files() {
 				changefiles := res[f]
-				fmt.Printf("- %s (%d unmerged config files)", f, len(changefiles))
+				fmt.Printf("- %s (%d unmerged config files)\n", f, len(changefiles))
 			}
 		}}
 
