@@ -21,8 +21,6 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
 
@@ -82,14 +80,6 @@ func initConfig() {
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
-		cobra.CheckErr(err)
-
-		// Search config in home directory with name ".mos-cli" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".mos")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
