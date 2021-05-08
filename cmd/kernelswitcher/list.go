@@ -27,22 +27,15 @@ import (
 func NewListcommand() *cobra.Command {
 	c := &cobra.Command{
 		Use:   "list",
-		Short: "List available MocaccinoOS system profiles",
-		Long: `Shows currently installed profiles in the system
+		Short: "List available MocaccinoOS kernels",
+		Long: `Shows kernels available in mocaccino os repositories
 
-$ mos profile list
+$ mos kernel-switcher list
 
-Profiles can be installed with luet, to show all the available profiles, run:
+To switch to one of them
 
-$ luet search system-profile
-
-To install one of them:
-
-$ luet install system-profile/default-systemd
-
-To enable:
-
-$ mos profile enable default-systemd`,
+$ mos kernel-switcher switch kernel/mocaccino-full
+`,
 		Run: func(cmd *cobra.Command, args []string) {
 
 			allKernelsPackages, err := kernel.All()
