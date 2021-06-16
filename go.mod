@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/kr/text v0.2.0 // indirect
+	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pkg/errors v0.8.1
 	github.com/sergi/go-diff v1.2.0
 	github.com/spf13/cobra v1.1.3
