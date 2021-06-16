@@ -2,3 +2,5 @@ mos-cli
 mos
 mos_*
 tests
+*.swo
+*.swp
