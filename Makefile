@@ -10,6 +10,7 @@ VERSION := $(shell git describe --tags || echo $(REVISION))
 VERSION := $(shell echo $(VERSION) | sed -e 's/^v//g')
 BUILD_PLATFORMS ?= -osarch="linux/amd64" -osarch="linux/386" -osarch="linux/arm"
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+DESTDIR ?= /usr/bin
 
 .PHONY: all
 all: build
@@ -43,3 +44,7 @@ lint:
 .PHONY: vendor
 vendor:
 	go mod vendor
+
+.PHONY: install
+install: build
+	cp mos-cli ${DESTDIR}/
