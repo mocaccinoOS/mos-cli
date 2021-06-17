@@ -19,6 +19,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -196,6 +198,39 @@ func (b *BootFiles) AddInitrdImage(i *InitrdImage, t *KernelType) error {
 		kf.Initrd = i
 		b.Files = append(b.Files, kf)
 	}
+
+	return nil
+}
+
+func (b *BootFiles) PurgeOrphanInitrdImages() error {
+	if len(b.Files) == 0 {
+		// Nothing to do
+		return nil
+	}
+
+	newFiles := []*KernelFiles{}
+
+	for idx, k := range b.Files {
+
+		if k.Initrd != nil && k.Kernel == nil {
+			fmt.Print(fmt.Sprintf(
+				"Removing orphan initrd %s...",
+				k.Initrd.GetFilename(),
+			))
+
+			err := os.Remove(filepath.Join(b.Dir, k.Initrd.GetFilename()))
+			if err != nil {
+				return err
+			}
+
+			fmt.Println("DONE.")
+		} else {
+			newFiles = append(newFiles, b.Files[idx])
+		}
+
+	}
+
+	b.Files = newFiles
 
 	return nil
 }

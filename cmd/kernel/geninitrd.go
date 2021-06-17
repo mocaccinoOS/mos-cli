@@ -105,6 +105,7 @@ $ mos kernel geninitrd --version 5.10.42 --ktype vanilla
 			ktype, _ := cmd.Flags().GetString("ktype")
 			dryRun, _ := cmd.Flags().GetBool("dry-run")
 			dracutOpts, _ := cmd.Flags().GetString("dracut-opts")
+			purge, _ := cmd.Flags().GetBool("purge")
 
 			// Temporary static configuration. I will move to
 			// configuration file soon to permit more easy
@@ -230,6 +231,18 @@ $ mos kernel geninitrd --version 5.10.42 --ktype vanilla
 
 			}
 
+			// Purge orphan initrd
+			if purge {
+				if release == "micro" {
+					fmt.Println("On micro the initramfs is manage with a package. Nothing to purge.")
+				} else {
+					err = bootFiles.PurgeOrphanInitrdImages()
+					if err != nil {
+						fmt.Println(fmt.Sprintf("Error on purge orphan initrd images: %s", err.Error()))
+					}
+				}
+			}
+
 		},
 	}
 
@@ -237,6 +250,7 @@ $ mos kernel geninitrd --version 5.10.42 --ktype vanilla
 	flags.Bool("all", false, "Rebuild all images with kernel.")
 	flags.Bool("dry-run", false, "Dry run commands.")
 	flags.Bool("set-links", false, "Set bzImage and Initrd links for the selected kernel or update links of the upgraded kernel.")
+	flags.Bool("purge", false, "Clean orphan initrd images without kernel.")
 	flags.String("bootdir", "/boot", "Directory where analyze kernel files.")
 	flags.String("version", "", "Specify the kernel version of the initrd image to build.")
 	flags.String("ktype", "", "Specify the kernel type of the initrd image to build.")
