@@ -22,7 +22,6 @@ import (
 	"os"
 
 	kernelspecs "github.com/MocaccinoOS/mos-cli/pkg/kernel/specs"
-	//"path/filepath"
 )
 
 func ReadBootDir(bootdir string, supportedTypes []kernelspecs.KernelType) (*kernelspecs.BootFiles, error) {

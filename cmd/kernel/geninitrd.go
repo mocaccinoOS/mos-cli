@@ -27,7 +27,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func setFilesLinks(kf *kernelspecs.KernelFiles, bootDir string) error {
+func setFilesLinks(kf *kernelspecs.KernelFiles, bootDir, release string) error {
 
 	// Ignoring errors
 	os.Remove(filepath.Join(bootDir, "bzImage"))
@@ -38,9 +38,22 @@ func setFilesLinks(kf *kernelspecs.KernelFiles, bootDir string) error {
 		return err
 	}
 
-	err = os.Symlink(kf.Initrd.GetFilename(), filepath.Join(bootDir, "Initrd"))
-	if err != nil {
-		return err
+	if kf.Initrd == nil {
+		fmt.Println(fmt.Sprintf(
+			"WARN: No initrd image found for kernel %s. Initrd symbolic link is not created.",
+			kf.Kernel.GetVersion(),
+		))
+
+		if release == "micro" {
+			fmt.Println(
+				"For micro release you need to install kernel/mocaccino-initramfs or kernel/mocaccino-initramfs-lts.",
+			)
+		}
+	} else {
+		err = os.Symlink(kf.Initrd.GetFilename(), filepath.Join(bootDir, "Initrd"))
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -53,12 +66,26 @@ func NewGeninitrdCommand() *cobra.Command {
 		Short:   "Generate initrd image and set default kernel/initrd links.",
 		Long: `Rebuild Dracut initrd images or for Mocaccino Micro fix links.
 
+$ # Generate all initrd images of the kernels available on boot dir.
 $ mos kernel geninitrd --all
 
+$ # Generate all initrd images of the kernels available on boot dir
+$ # and set the bzImage, Initrd links to one of the kernel available
+$ # if not present or to the next release of the same kernel after the
+$ # upgrade.
+$ mos kernel geninitrd --all --set-links
+
+$ # Just show what dracut commands will be executed for every initrd images.
 $ mos kernel geninitrd --all --dry-run
 
+$ # Generate the initrd image for the kernel 5.10.42
 $ mos kernel geninitrd --version 5.10.42
 
+$ # Generate the initrd image for the kernel 5.10.42 and kernel type vanilla.
+$ mos kernel geninitrd --version 5.10.42 --ktype vanilla
+
+$ # Generate the initrd image for the kernel 5.10.42 and kernel type vanilla
+$ # and set the links bzImage, Initrd to the selected kernel/initrd.
 $ mos kernel geninitrd --version 5.10.42 --ktype vanilla
 
 `,
@@ -77,6 +104,7 @@ $ mos kernel geninitrd --version 5.10.42 --ktype vanilla
 			version, _ := cmd.Flags().GetString("version")
 			ktype, _ := cmd.Flags().GetString("ktype")
 			dryRun, _ := cmd.Flags().GetBool("dry-run")
+			dracutOpts, _ := cmd.Flags().GetString("dracut-opts")
 
 			// Temporary static configuration. I will move to
 			// configuration file soon to permit more easy
@@ -107,9 +135,12 @@ $ mos kernel geninitrd --version 5.10.42 --ktype vanilla
 			}
 
 			// TODO: default dracut options will be read from configuration.
+
 			defaultDracutOpts :=
 				"-H -q -f -o systemd -o systemd-initrd -o systemd-networkd -o dracut-systemd"
-
+			if dracutOpts != "" {
+				defaultDracutOpts = dracutOpts
+			}
 			dracutBuilder := initrd.NewDracutBuilder(defaultDracutOpts, dryRun)
 
 			if all {
@@ -129,6 +160,8 @@ $ mos kernel geninitrd --version 5.10.42 --ktype vanilla
 							))
 						}
 					}
+				} else {
+					fmt.Println("Micro release uses initrd packages. Nothing to do for initrd images generation.")
 				}
 
 				var kf *kernelspecs.KernelFiles
@@ -153,7 +186,7 @@ $ mos kernel geninitrd --version 5.10.42 --ktype vanilla
 					}
 
 					if kf != nil {
-						err := setFilesLinks(kf, bootFiles.Dir)
+						err := setFilesLinks(kf, bootFiles.Dir, release)
 						if err != nil {
 							fmt.Println(fmt.Sprintf("Error on set links for kernel %s: %s",
 								kf.Kernel.GetVersion(),
@@ -171,17 +204,22 @@ $ mos kernel geninitrd --version 5.10.42 --ktype vanilla
 					os.Exit(1)
 				}
 
-				err = dracutBuilder.Build(file, bootFiles.Dir)
-				if err != nil {
-					fmt.Println(fmt.Sprintf("Error on generate initrd image for kernel %s: %s. I go ahead.",
-						file.Kernel.GetFilename(),
-						err.Error(),
-					))
+				if release != "micro" {
+
+					err = dracutBuilder.Build(file, bootFiles.Dir)
+					if err != nil {
+						fmt.Println(fmt.Sprintf("Error on generate initrd image for kernel %s: %s. I go ahead.",
+							file.Kernel.GetFilename(),
+							err.Error(),
+						))
+					}
+				} else {
+					fmt.Println("Micro release uses initrd packages. Nothing to do for initrd images generation.")
 				}
 
 				if setLinks {
 
-					err := setFilesLinks(file, bootFiles.Dir)
+					err := setFilesLinks(file, bootFiles.Dir, release)
 					if err != nil {
 						fmt.Println(fmt.Sprintf("Error on set links for kernel %s: %s",
 							file.Kernel.GetVersion(),
@@ -202,6 +240,9 @@ $ mos kernel geninitrd --version 5.10.42 --ktype vanilla
 	flags.String("bootdir", "/boot", "Directory where analyze kernel files.")
 	flags.String("version", "", "Specify the kernel version of the initrd image to build.")
 	flags.String("ktype", "", "Specify the kernel type of the initrd image to build.")
+	flags.String("dracut-opts", "",
+		`Override the default dracut options used on the initrd image generation.
+Set the MOS_DRACUT_ARGS env in alternative.`)
 
 	return c
 }
