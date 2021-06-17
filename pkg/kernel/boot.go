@@ -20,6 +20,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
 
 	kernelspecs "github.com/MocaccinoOS/mos-cli/pkg/kernel/specs"
 )
@@ -119,4 +122,65 @@ func ReadBootDir(bootdir string, supportedTypes []kernelspecs.KernelType) (*kern
 	}
 
 	return ans, nil
+}
+
+func GrubMkconfig(grubCfgFile string, dryRun bool) error {
+	if grubCfgFile == "" {
+		return errors.New("Invalid grub config file path")
+	}
+
+	grubDir := filepath.Dir(grubCfgFile)
+	_, err := os.Stat(grubDir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			err = os.MkdirAll(grubDir, 0755)
+			if err != nil {
+				return errors.New(fmt.Sprintf(
+					"Error on create directory %s: %s",
+					grubDir, err.Error()))
+			}
+		} else {
+			return errors.New(fmt.Sprintf(
+				"Error on stat directory %s: %s",
+				grubDir, err.Error()))
+		}
+
+	}
+
+	//grub-mkconfig -o ${MOCACCINO_TARGET}/boot/grub/grub.cfg
+	grubBinary := "grub-mkconfig"
+	args := []string{
+		"-o", grubCfgFile,
+	}
+
+	if dryRun {
+		fmt.Println("[dry-run mode] command: " + grubBinary + " " + strings.Join(args, " "))
+		return nil
+	}
+
+	fmt.Println(fmt.Sprintf("Creating grub config file %s...", grubCfgFile))
+
+	grubCommand := exec.Command(grubBinary, args...)
+	grubCommand.Stdout = os.Stdout
+	grubCommand.Stderr = os.Stderr
+
+	err = grubCommand.Start()
+	if err != nil {
+		return errors.New(
+			fmt.Sprintf("Error on start %s command: %s", grubBinary, err.Error()))
+	}
+
+	err = grubCommand.Wait()
+	if err != nil {
+		return errors.New(
+			fmt.Sprintf("Error on waiting %s command: %s", grubBinary, err.Error()))
+	}
+
+	if grubCommand.ProcessState.ExitCode() != 0 {
+		return errors.New(
+			fmt.Sprintf("%s command exiting with %d",
+				grubBinary, grubCommand.ProcessState.ExitCode()))
+	}
+
+	return nil
 }

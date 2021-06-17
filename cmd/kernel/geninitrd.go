@@ -106,6 +106,7 @@ $ mos kernel geninitrd --version 5.10.42 --ktype vanilla
 			dryRun, _ := cmd.Flags().GetBool("dry-run")
 			dracutOpts, _ := cmd.Flags().GetString("dracut-opts")
 			purge, _ := cmd.Flags().GetBool("purge")
+			grub, _ := cmd.Flags().GetBool("grub")
 
 			// Temporary static configuration. I will move to
 			// configuration file soon to permit more easy
@@ -243,6 +244,16 @@ $ mos kernel geninitrd --version 5.10.42 --ktype vanilla
 				}
 			}
 
+			// Update grub config
+			if grub {
+				err = kernel.GrubMkconfig(filepath.Join(bootFiles.Dir, "/grub/grub.cfg"), dryRun)
+				if err != nil {
+					fmt.Println(fmt.Sprintf("Error on update grub.cfg: %s", err.Error()))
+					// TODO: We need ignore it?
+					os.Exit(1)
+				}
+			}
+
 		},
 	}
 
@@ -251,6 +262,7 @@ $ mos kernel geninitrd --version 5.10.42 --ktype vanilla
 	flags.Bool("dry-run", false, "Dry run commands.")
 	flags.Bool("set-links", false, "Set bzImage and Initrd links for the selected kernel or update links of the upgraded kernel.")
 	flags.Bool("purge", false, "Clean orphan initrd images without kernel.")
+	flags.Bool("grub", false, "Update grub.cfg.")
 	flags.String("bootdir", "/boot", "Directory where analyze kernel files.")
 	flags.String("version", "", "Specify the kernel version of the initrd image to build.")
 	flags.String("ktype", "", "Specify the kernel type of the initrd image to build.")
