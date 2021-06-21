@@ -44,7 +44,7 @@ func setFilesLinks(kf *kernelspecs.KernelFiles, bootDir, release string) error {
 			kf.Kernel.GetVersion(),
 		))
 
-		if release == "micro" {
+		if release == "micro" || release == "micro-embedded" {
 			fmt.Println(
 				"For micro release you need to install kernel/mocaccino-initramfs or kernel/mocaccino-initramfs-lts.",
 			)
@@ -146,7 +146,7 @@ $ mos kernel geninitrd --version 5.10.42 --ktype vanilla
 			dracutBuilder := initrd.NewDracutBuilder(defaultDracutOpts, dryRun)
 
 			if all {
-				if release != "micro" {
+				if release != "micro" && release != "micro-embedded" {
 
 					for _, f := range bootFiles.Files {
 						if f.Kernel == nil {
@@ -234,7 +234,7 @@ $ mos kernel geninitrd --version 5.10.42 --ktype vanilla
 
 			// Purge orphan initrd
 			if purge {
-				if release == "micro" {
+				if release == "micro" || release == "micro-embedded" {
 					fmt.Println("On micro the initramfs is manage with a package. Nothing to purge.")
 				} else {
 					err = bootFiles.PurgeOrphanInitrdImages()
