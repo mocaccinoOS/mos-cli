@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"gopkg.in/yaml.v3"
 )
 
 func (t *KernelType) SetKernelPrefix(p string) { t.KernelPrefix = p }
@@ -31,6 +33,7 @@ func (t *KernelType) GetKernelPrefix() string { return t.KernelPrefix }
 func (t *KernelType) GetInitrdPrefix() string { return t.InitrdPrefix }
 func (t *KernelType) GetSuffix() string       { return t.Suffix }
 func (t *KernelType) GetType() string         { return t.Type }
+func (t *KernelType) GetName() string         { return t.Name }
 
 func (t *KernelType) GetInitrdPrefixSanitized() string {
 	initrdprefix := t.InitrdPrefix
@@ -127,4 +130,13 @@ func (t *KernelType) GetRegex() *regexp.Regexp {
 	}
 
 	return t.Regex
+}
+
+func KernelTypeFromYaml(data []byte) (*KernelType, error) {
+	ans := &KernelType{}
+	if err := yaml.Unmarshal(data, ans); err != nil {
+		return nil, err
+	}
+
+	return ans, nil
 }

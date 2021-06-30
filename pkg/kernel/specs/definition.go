@@ -38,6 +38,7 @@ type InitrdImage struct {
 }
 
 type KernelType struct {
+	Name         string `json:"name,omitempty" yaml:"name,omitempty"`
 	KernelPrefix string `json:"kernel_prefix,omitempty" yaml:"kernel_prefix,omitempty"`
 	InitrdPrefix string `json:"initrd_prefix,omitempty" yaml:"initrd_prefix,omitempty"`
 	Suffix       string `json:"suffix,omitempty" yaml:"suffix,omitempty"`
