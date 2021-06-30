@@ -15,10 +15,10 @@
 package cmdkernel
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
-	"github.com/MocaccinoOS/mos-cli/pkg/kernel"
 	kernelspecs "github.com/MocaccinoOS/mos-cli/pkg/kernel/specs"
 	"github.com/MocaccinoOS/mos-cli/pkg/profile"
 
@@ -26,42 +26,40 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewListcommand() *cobra.Command {
+func NewProfilesCommand() *cobra.Command {
 	c := &cobra.Command{
-		Use:     "list",
-		Aliases: []string{"l"},
-		Short:   "List available kernels on system.",
+		Use:     "profiles",
+		Aliases: []string{"p"},
+		Short:   "List available kernels profiles.",
 		Long: `Shows kernels available in your system
 
-$ mos kernel list
+$ mos kernel profiles
 
 `,
 		Run: func(cmd *cobra.Command, args []string) {
 
 			jsonOutput, _ := cmd.Flags().GetBool("json")
-			bootDir, _ := cmd.Flags().GetString("bootDir")
 			kernelProfilesDir, _ := cmd.Flags().GetString("kernel-profiles-dir")
 
 			types := []kernelspecs.KernelType{}
 			if kernelProfilesDir != "" {
 				types, _ = profile.LoadKernelProfiles(kernelProfilesDir)
-			}
-			if len(types) == 0 {
+			} else {
 				types = profile.GetDefaultKernelProfiles()
 			}
 
-			bootFiles, err := kernel.ReadBootDir(bootDir, types)
-			if err != nil {
-				fmt.Println("Error on read boot directory: " + err.Error())
-				os.Exit(1)
-			}
-
 			if jsonOutput {
-				fmt.Println(bootFiles)
+				data, err := json.Marshal(types)
+				if err != nil {
+					fmt.Println(fmt.Errorf("Error on convert data to json: %s", err.Error()))
+					os.Exit(1)
+				}
+				fmt.Println(string(data))
+
 			} else {
 
-				if len(bootFiles.Files) == 0 {
-					fmt.Println("No kernel files available.")
+				if len(types) == 0 {
+					fmt.Println("No kernel profiles availables. I will use default profiles.")
 					os.Exit(0)
 				}
 
@@ -71,52 +69,24 @@ $ mos kernel list
 				})
 				table.SetCenterSeparator("|")
 				table.SetHeader([]string{
-					"Type",
+					"Name",
+					"Kernel Prefix",
+					"Initrd Prefix",
 					"Suffix",
-					"Version",
-					"Has Initrd",
-					"Has Kernel Image",
-					"Has bzImage,Initrd links",
+					"Type",
+					"With Arch",
 				})
 
-				for _, kf := range bootFiles.Files {
+				for _, kt := range types {
 
-					hasInitrd := false
-					hasKernel := false
-					hasLinks := false
-
-					row := []string{
-						kf.Type.GetType(),
-						kf.Type.GetSuffix(),
-					}
-
-					version := ""
-					if kf.Initrd != nil {
-						version = kf.Initrd.GetVersion()
-						hasInitrd = true
-					}
-
-					if kf.Kernel != nil {
-						version = kf.Kernel.GetVersion()
-						hasKernel = true
-					}
-
-					if hasKernel && hasInitrd &&
-						bootFiles.BzImageLink != "" &&
-						bootFiles.InitrdLink != "" &&
-						kf.Kernel.GetFilename() == bootFiles.BzImageLink &&
-						kf.Initrd.GetFilename() == bootFiles.InitrdLink {
-						hasLinks = true
-					}
-
-					row = append(row, []string{
-						version,
-						fmt.Sprintf("%v", hasInitrd),
-						fmt.Sprintf("%v", hasKernel),
-						fmt.Sprintf("%v", hasLinks),
-					}...)
-
-					table.Append(row)
+					table.Append([]string{
+						kt.GetName(),
+						kt.GetKernelPrefixSanitized(),
+						kt.GetInitrdPrefixSanitized(),
+						kt.GetSuffix(),
+						kt.GetType(),
+						fmt.Sprintf("%v", kt.WithArch),
+					})
 				}
 
 				table.Render()
@@ -126,7 +96,6 @@ $ mos kernel list
 
 	flags := c.Flags()
 	flags.Bool("json", false, "JSON output")
-	flags.String("bootdir", "/boot", "Directory where analyze kernel files.")
 	flags.String("kernel-profiles-dir", "/etc/mocaccino/kernels-profiles/",
 		"Specify the directory where read the kernel types profiles supported.")
 

@@ -31,5 +31,6 @@ func init() {
 	kernelCmd.AddCommand(
 		cmdkernel.NewListcommand(),
 		cmdkernel.NewGeninitrdCommand(),
+		cmdkernel.NewProfilesCommand(),
 	)
 }

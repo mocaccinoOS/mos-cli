@@ -22,6 +22,7 @@ import (
 	"github.com/MocaccinoOS/mos-cli/pkg/initrd"
 	"github.com/MocaccinoOS/mos-cli/pkg/kernel"
 	kernelspecs "github.com/MocaccinoOS/mos-cli/pkg/kernel/specs"
+	"github.com/MocaccinoOS/mos-cli/pkg/profile"
 	"github.com/MocaccinoOS/mos-cli/pkg/utils"
 
 	"github.com/spf13/cobra"
@@ -75,6 +76,12 @@ $ # if not present or to the next release of the same kernel after the
 $ # upgrade.
 $ mos kernel geninitrd --all --set-links
 
+$ # Generate all initrd images of the kernels available on boot dir
+$ # and set the bzImage, Initrd links to one of the kernel available
+$ # if not present or to the next release of the same kernel after the
+$ # upgrade. In addition, it purges old initrd images and update grub.cfg.
+$ mos kernel geninitrd --all --set-links --purge --grub
+
 $ # Just show what dracut commands will be executed for every initrd images.
 $ mos kernel geninitrd --all --dry-run
 
@@ -107,21 +114,15 @@ $ mos kernel geninitrd --version 5.10.42 --ktype vanilla
 			dracutOpts, _ := cmd.Flags().GetString("dracut-opts")
 			purge, _ := cmd.Flags().GetBool("purge")
 			grub, _ := cmd.Flags().GetBool("grub")
+			kernelProfilesDir, _ := cmd.Flags().GetString("kernel-profiles-dir")
 
-			// Temporary static configuration. I will move to
-			// configuration file soon to permit more easy
-			// customization and to support multiple kernel types.
-			types := []kernelspecs.KernelType{
-				kernelspecs.KernelType{
-					Suffix:   "sabayon",
-					Type:     "genkernel",
-					WithArch: true,
-				},
-				kernelspecs.KernelType{
-					Suffix:   "mocaccino",
-					Type:     "vanilla",
-					WithArch: true,
-				},
+			types := []kernelspecs.KernelType{}
+
+			if kernelProfilesDir != "" {
+				types, _ = profile.LoadKernelProfiles(kernelProfilesDir)
+			}
+			if len(types) == 0 {
+				types = profile.GetDefaultKernelProfiles()
 			}
 
 			bootFiles, err := kernel.ReadBootDir(bootDir, types)
@@ -269,6 +270,8 @@ $ mos kernel geninitrd --version 5.10.42 --ktype vanilla
 	flags.String("dracut-opts", "",
 		`Override the default dracut options used on the initrd image generation.
 Set the MOS_DRACUT_ARGS env in alternative.`)
+	flags.String("kernel-profiles-dir", "/etc/mocaccino/kernels-profiles/",
+		"Specify the directory where read the kernel types profiles supported.")
 
 	return c
 }
