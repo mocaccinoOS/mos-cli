@@ -1,0 +1,4 @@
+name: "Mocaccino OS"
+suffix: "mocaccino"
+type: "vanilla"
+with_arch: true
