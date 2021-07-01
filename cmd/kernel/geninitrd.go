@@ -67,33 +67,33 @@ func NewGeninitrdCommand() *cobra.Command {
 		Short:   "Generate initrd image and set default kernel/initrd links.",
 		Long: `Rebuild Dracut initrd images or for Mocaccino Micro fix links.
 
-$ # Generate all initrd images of the kernels available on boot dir.
-$ mos kernel geninitrd --all
+$> # Generate all initrd images of the kernels available on boot dir.
+$> mos kernel geninitrd --all
 
-$ # Generate all initrd images of the kernels available on boot dir
-$ # and set the bzImage, Initrd links to one of the kernel available
-$ # if not present or to the next release of the same kernel after the
-$ # upgrade.
-$ mos kernel geninitrd --all --set-links
+$> # Generate all initrd images of the kernels available on boot dir
+$> # and set the bzImage, Initrd links to one of the kernel available
+$> # if not present or to the next release of the same kernel after the
+$> # upgrade.
+$> mos kernel geninitrd --all --set-links
 
-$ # Generate all initrd images of the kernels available on boot dir
-$ # and set the bzImage, Initrd links to one of the kernel available
-$ # if not present or to the next release of the same kernel after the
-$ # upgrade. In addition, it purges old initrd images and update grub.cfg.
-$ mos kernel geninitrd --all --set-links --purge --grub
+$> # Generate all initrd images of the kernels available on boot dir
+$> # and set the bzImage, Initrd links to one of the kernel available
+$> # if not present or to the next release of the same kernel after the
+$> # upgrade. In addition, it purges old initrd images and update grub.cfg.
+$> mos kernel geninitrd --all --set-links --purge --grub
 
-$ # Just show what dracut commands will be executed for every initrd images.
-$ mos kernel geninitrd --all --dry-run
+$> # Just show what dracut commands will be executed for every initrd images.
+$> mos kernel geninitrd --all --dry-run
 
-$ # Generate the initrd image for the kernel 5.10.42
-$ mos kernel geninitrd --version 5.10.42
+$> # Generate the initrd image for the kernel 5.10.42
+$> mos kernel geninitrd --version 5.10.42
 
-$ # Generate the initrd image for the kernel 5.10.42 and kernel type vanilla.
-$ mos kernel geninitrd --version 5.10.42 --ktype vanilla
+$> # Generate the initrd image for the kernel 5.10.42 and kernel type vanilla.
+$> mos kernel geninitrd --version 5.10.42 --ktype vanilla
 
-$ # Generate the initrd image for the kernel 5.10.42 and kernel type vanilla
-$ # and set the links bzImage, Initrd to the selected kernel/initrd.
-$ mos kernel geninitrd --version 5.10.42 --ktype vanilla
+$> # Generate the initrd image for the kernel 5.10.42 and kernel type vanilla
+$> # and set the links bzImage, Initrd to the selected kernel/initrd.
+$> mos kernel geninitrd --version 5.10.42 --ktype vanilla
 
 `,
 		PreRun: func(cmd *cobra.Command, args []string) {
