@@ -50,9 +50,9 @@ func NewKernelImageFromFile(t *KernelType, file string) (*KernelImage, error) {
 	}
 
 	ans.Version = words[1]
-	file = file[len(words[1])+1:]
 
 	if t.Suffix != "" {
+		file = file[len(words[1])+1:]
 		ans.Suffix = file
 	}
 
