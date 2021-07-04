@@ -63,6 +63,7 @@ func (d *DracutBuilder) Build(kf *kernelspecs.KernelFiles, bootDir string) error
 		initrd.SetVersion(kf.Kernel.GetVersion())
 		initrd.SetSuffix(kf.Type.GetSuffix())
 		initrd.SetKernelType(kf.Kernel.GetType())
+		initrd.SetArch(kf.Kernel.GetArch())
 	}
 
 	kf.Initrd = initrd
