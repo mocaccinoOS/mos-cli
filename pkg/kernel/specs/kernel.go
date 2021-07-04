@@ -44,16 +44,18 @@ func NewKernelImageFromFile(t *KernelType, file string) (*KernelImage, error) {
 	}
 
 	words := strings.Split(file, "-")
+	i := 0
 	if t.WithArch {
-		file = file[len(words[0])+1:]
-		ans.Arch = words[0]
+		file = file[len(words[i])+1:]
+		ans.Arch = words[i]
+		i += 1
 	}
 
-	ans.Version = words[1]
+	ans.Version = words[i]
+	file = file[len(words[i]):]
 
 	if t.Suffix != "" {
-		file = file[len(words[1])+1:]
-		ans.Suffix = file
+		ans.Suffix = file[1:]
 	}
 
 	return ans, nil
