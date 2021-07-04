@@ -25,6 +25,7 @@ import (
 	"strings"
 
 	kernelspecs "github.com/MocaccinoOS/mos-cli/pkg/kernel/specs"
+	. "github.com/MocaccinoOS/mos-cli/pkg/logger"
 )
 
 func ReadBootDir(bootdir string, supportedTypes []kernelspecs.KernelType) (*kernelspecs.BootFiles, error) {
@@ -55,6 +56,8 @@ func ReadBootDir(bootdir string, supportedTypes []kernelspecs.KernelType) (*kern
 			continue
 		}
 
+		DebugC("Analyzing file", file.Name(), "...")
+
 		// Retrieve bzImage link
 		if file.Name() == "bzImage" && (file.Mode()&os.ModeSymlink != 0) {
 			linkedFile, err := os.Readlink(file.Name())
@@ -73,6 +76,8 @@ func ReadBootDir(bootdir string, supportedTypes []kernelspecs.KernelType) (*kern
 
 		for _, t := range supportedTypes {
 			if t.GetRegex().MatchString(file.Name()) {
+
+				DebugC("File", file.Name(), "match type", t.GetName())
 
 				isInirtd, err := t.IsInitrdFile(file.Name())
 				if err != nil {
