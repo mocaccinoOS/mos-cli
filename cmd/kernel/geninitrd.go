@@ -58,8 +58,8 @@ func setFilesLinks(kf *kernelspecs.KernelFiles, bootDir, release string) error {
 			)
 		}
 	} else {
-		DebugC("Creating link Initrd to", kf.Initrd.GetFilename())
-		err = os.Symlink(kf.Initrd.GetFilename(), filepath.Join(bootDir, "Initrd"))
+		DebugC("Creating link Initrd to", kf.Initrd.GenerateFilename())
+		err = os.Symlink(kf.Initrd.GenerateFilename(), filepath.Join(bootDir, "Initrd"))
 		if err != nil {
 			return err
 		}
@@ -157,13 +157,13 @@ $> mos kernel geninitrd --version 5.10.42 --ktype vanilla
 			if all {
 				if release != "micro" && release != "micro-embedded" {
 
-					for _, f := range bootFiles.Files {
+					for idx, f := range bootFiles.Files {
 						if f.Kernel == nil {
 							// Ignore initrd without kernel image.
 							continue
 						}
 
-						err := dracutBuilder.Build(f, bootFiles.Dir)
+						err := dracutBuilder.Build(bootFiles.Files[idx], bootFiles.Dir)
 						if err != nil {
 							fmt.Println(fmt.Sprintf("Error on generate initrd image for kernel %s: %s. I go ahead.",
 								f.Kernel.GetFilename(),
