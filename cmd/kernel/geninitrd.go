@@ -22,6 +22,7 @@ import (
 	"github.com/MocaccinoOS/mos-cli/pkg/initrd"
 	"github.com/MocaccinoOS/mos-cli/pkg/kernel"
 	kernelspecs "github.com/MocaccinoOS/mos-cli/pkg/kernel/specs"
+	. "github.com/MocaccinoOS/mos-cli/pkg/logger"
 	"github.com/MocaccinoOS/mos-cli/pkg/profile"
 	"github.com/MocaccinoOS/mos-cli/pkg/utils"
 
@@ -34,7 +35,13 @@ func setFilesLinks(kf *kernelspecs.KernelFiles, bootDir, release string) error {
 	os.Remove(filepath.Join(bootDir, "bzImage"))
 	os.Remove(filepath.Join(bootDir, "Initrd"))
 
-	err := os.Symlink(kf.Kernel.GetFilename(), filepath.Join(bootDir, "bzImage"))
+	err := os.Chdir(bootDir)
+	if err != nil {
+		return err
+	}
+
+	DebugC("Creating link bzImage to", kf.Kernel.GetFilename())
+	err = os.Symlink(kf.Kernel.GetFilename(), filepath.Join(bootDir, "bzImage"))
 	if err != nil {
 		return err
 	}
@@ -51,6 +58,7 @@ func setFilesLinks(kf *kernelspecs.KernelFiles, bootDir, release string) error {
 			)
 		}
 	} else {
+		DebugC("Creating link Initrd to", kf.Initrd.GetFilename())
 		err = os.Symlink(kf.Initrd.GetFilename(), filepath.Join(bootDir, "Initrd"))
 		if err != nil {
 			return err
